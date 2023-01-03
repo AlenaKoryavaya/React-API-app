@@ -20,7 +20,6 @@ class MarvelService {
 
     getCharacter = async (id) => {
         const res = await this.getSource(`${this._apiBase}characters/${id}?${this._apiKey}`);
-        console.log(res.data.results[0]);
         return this._transformCharacter(res.data.results[0]);
     };
 
