@@ -87,7 +87,11 @@ const View = ({ char }) => {
             let comicsList = comics.map((item, i) => {
                 return (
                     <li className="char__comics-item" key={i}>
-                        <a href={item.resourceURI} target="_blank" rel="noreferrer">
+                        <a
+                            href={`${item.resourceURI}?apikey=7bb779595667b5381fd0ca5c8939611b`}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
                             {item.name}
                         </a>
                     </li>
