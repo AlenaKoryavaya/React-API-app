@@ -1,4 +1,5 @@
-import { Component } from "react";
+import { useState, useEffect } from "react";
+
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import MarvelService from "../../services/MarvelService";
@@ -6,73 +7,58 @@ import PropTypes from "prop-types";
 
 import "./charList.scss";
 
-class CharList extends Component {
-    // синтаксис полей классов
-    state = {
-        charList: [],
-        loading: true,
-        error: false,
-        selectedChar: null,
-        newItemsLoading: false,
-        offset: 210,
-        charEnded: false,
-    };
+const CharList = (props) => {
+    const [charList, setCharList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [selectedChar, setSelectedChar] = useState(null);
+    const [newItemsLoading, setNewItemsLoading] = useState(false);
+    const [offset, setOffset] = useState(210);
+    const [charEnded, setCharEnded] = useState(false);
 
     // создаем экземпляр класса
-    marvelService = new MarvelService();
+    const marvelService = new MarvelService();
 
-    componentDidMount = () => {
-        this.onReguest();
+    useEffect(() => {
+        onReguest();
+    }, []); // [] - то, функция выполниться только 1 раз (т.к. зависимость [])
+
+    const onReguest = (offset) => {
+        onCharListLoading();
+        marvelService.getAllCharacters(offset).then(onCharsLoaded).catch(onError);
     };
 
-    onReguest = (offset) => {
-        this.onCharListLoading();
-        this.marvelService.getAllCharacters(offset).then(this.onCharsLoaded).catch(this.onError);
+    const onCharListLoading = () => {
+        setNewItemsLoading(true);
     };
 
-    onCharListLoading = () => {
-        this.setState({
-            newItemsLoading: true,
-        });
+    const onCharsLoaded = (newCharList) => {
+        // проверяем, не закончились ли еще персонажи от сервера (ended)
+        let ended = newCharList.length < 9 ? true : false;
+
+        setCharList((charList) => [...charList, ...newCharList]);
+        setLoading(false);
+        setNewItemsLoading(false);
+        setOffset((offset) => offset + 9);
+        setCharEnded(ended);
     };
 
-    onCharsLoaded = (newCharList) => {
-        // проверяем, не закончились ли еще персонажи от сервера
-        let ended = false;
-        if (newCharList.length < 9) {
-            ended = true;
-        }
-
-        this.setState(({ charList, offset }) => ({
-            charList: [...charList, ...newCharList],
-            loading: false,
-            newItemsLoading: false,
-            offset: offset + 9,
-            charEnded: ended,
-        }));
+    const onError = () => {
+        setLoading(false);
+        setError(true);
     };
 
-    onError = () => {
-        this.setState({
-            loading: false,
-            error: true,
-        });
+    const onCharSelected = (id, i) => {
+        setSelectedChar(i);
+        props.onCharSelected(id);
     };
 
-    onCharSelected = (id, i) => {
-        this.setState({
-            selectedChar: i,
-        });
-
-        this.props.onCharSelected(id);
-    };
-
-    displayChars = (charList) => {
+    function displayChars(charList) {
         const elements = charList.map((item, i) => {
             const { id, name, thumbnail } = item;
             // Добавляем красную тень выбранному персонажу
             const styleSelectedImg =
-                i === this.state.selectedChar ? "char__item char__item_selected" : "char__item";
+                i === selectedChar ? "char__item char__item_selected" : "char__item";
             // Корректируем формат картинки (not found)
             let styleImgFormat = { objectFit: "cover" };
             if (
@@ -88,10 +74,10 @@ class CharList extends Component {
                     className={styleSelectedImg}
                     key={id}
                     tabIndex={0}
-                    onClick={() => this.onCharSelected(id, i)}
+                    onClick={() => onCharSelected(id, i)}
                     onKeyDown={(e) => {
                         if (e.key === " " || e.key === "Enter") {
-                            this.onCharSelected(id, i);
+                            onCharSelected(id, i);
                         }
                     }}
                 >
@@ -100,34 +86,30 @@ class CharList extends Component {
                 </li>
             );
         });
-
         return <ul className="char__grid">{elements}</ul>;
-    };
-
-    render() {
-        const { charList, loading, error, newItemsLoading, offset, charEnded } = this.state;
-        const spinner = loading ? <Spinner /> : null;
-        const errorMessage = error ? <ErrorMessage /> : null;
-        const list = !(loading || error) ? this.displayChars(charList) : null;
-
-        return (
-            <div className="char__list">
-                {list}
-                {spinner}
-                {errorMessage}
-                <button
-                    className="button button__main button__long"
-                    disabled={newItemsLoading}
-                    // убираем кнопку если персонажи закончились (style)
-                    style={{ display: charEnded ? "none" : "block" }}
-                    onClick={() => this.onReguest(offset)}
-                >
-                    <div className="inner">load more</div>
-                </button>
-            </div>
-        );
     }
-}
+
+    const spinner = loading ? <Spinner /> : null;
+    const errorMessage = error ? <ErrorMessage /> : null;
+    const list = !(loading || error) ? displayChars(charList) : null;
+
+    return (
+        <div className="char__list">
+            {list}
+            {spinner}
+            {errorMessage}
+            <button
+                className="button button__main button__long"
+                disabled={newItemsLoading}
+                // убираем кнопку если персонажи закончились (style)
+                style={{ display: charEnded ? "none" : "block" }}
+                onClick={() => onReguest(offset)}
+            >
+                <div className="inner">load more</div>
+            </button>
+        </div>
+    );
+};
 
 CharList.propTypes = {
     onCharSelected: PropTypes.func,
