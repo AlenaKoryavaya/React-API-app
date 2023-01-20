@@ -2,34 +2,28 @@ import { useState, useEffect } from "react";
 
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import MarvelService from "../../services/MarvelService";
+import useMarvelService from "../../services/MarvelService";
 import PropTypes from "prop-types";
 
 import "./charList.scss";
 
 const CharList = (props) => {
     const [charList, setCharList] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-    const [selectedChar, setSelectedChar] = useState(null);
     const [newItemsLoading, setNewItemsLoading] = useState(false);
-    const [offset, setOffset] = useState(210);
+    const [offset, setOffset] = useState(200);
     const [charEnded, setCharEnded] = useState(false);
+    const [selectedChar, setSelectedChar] = useState(null);
 
-    // создаем экземпляр класса
-    const marvelService = new MarvelService();
+    const { loading, error, getAllCharacters } = useMarvelService();
 
+    // если init - true -> то это получ первичная загрузка
     useEffect(() => {
-        onReguest();
+        onReguest(offset, true);
     }, []); // [] - то, функция выполниться только 1 раз (т.к. зависимость [])
 
-    const onReguest = (offset) => {
-        onCharListLoading();
-        marvelService.getAllCharacters(offset).then(onCharsLoaded).catch(onError);
-    };
-
-    const onCharListLoading = () => {
-        setNewItemsLoading(true);
+    const onReguest = (offset, initial) => {
+        initial ? setNewItemsLoading(false) : setNewItemsLoading(true);
+        getAllCharacters(offset).then(onCharsLoaded);
     };
 
     const onCharsLoaded = (newCharList) => {
@@ -37,15 +31,9 @@ const CharList = (props) => {
         let ended = newCharList.length < 9 ? true : false;
 
         setCharList((charList) => [...charList, ...newCharList]);
-        setLoading(false);
-        setNewItemsLoading(false);
+        setNewItemsLoading((newItemsLoading) => false);
         setOffset((offset) => offset + 9);
-        setCharEnded(ended);
-    };
-
-    const onError = () => {
-        setLoading(false);
-        setError(true);
+        setCharEnded((charEnded) => ended);
     };
 
     const onCharSelected = (id, i) => {
@@ -89,13 +77,13 @@ const CharList = (props) => {
         return <ul className="char__grid">{elements}</ul>;
     }
 
-    const spinner = loading ? <Spinner /> : null;
+    const items = displayChars(charList);
+    const spinner = loading && !newItemsLoading ? <Spinner /> : null;
     const errorMessage = error ? <ErrorMessage /> : null;
-    const list = !(loading || error) ? displayChars(charList) : null;
 
     return (
         <div className="char__list">
-            {list}
+            {items}
             {spinner}
             {errorMessage}
             <button

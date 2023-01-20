@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import MarvelService from "../../services/MarvelService";
+import useMarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 
@@ -8,43 +8,23 @@ import "./randomChar.scss";
 import mjolnir from "../../resources/img/mjolnir.png";
 
 const RandomChar = () => {
-    // синтаксис полей классов
     const [char, setChar] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    // создаем экземпляр класса
-    const marvelService = new MarvelService();
+    const { loading, error, clearError, getCharacter } = useMarvelService();
 
     useEffect(() => {
         updateChar();
-
         // const timerId = setInterval(updateChar, 60000);
-
-        // return () => {
-        //     clearInterval(timerId);
-        // };
+        // return () => { clearInterval(timerId) };
     }, []);
 
     const onCharLoaded = (char) => {
         setChar(char);
-        setLoading(false);
-    };
-
-    const onLoading = () => {
-        setLoading(true);
-    };
-
-    const onError = () => {
-        setLoading(false);
-        setError(true);
     };
 
     const updateChar = () => {
+        clearError();
         const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-        onLoading();
-        // в then уже будет параметр res, кот передасться в onCharLoaded как char
-        marvelService.getCharacter(id).then(onCharLoaded).catch(onError);
+        getCharacter(id).then(onCharLoaded);
     };
 
     const spinner = loading ? <Spinner /> : null;
