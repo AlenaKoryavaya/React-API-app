@@ -13,7 +13,7 @@ const AppHeader = () => {
                 <ul>
                     <li>
                         <NavLink
-                            end
+                            end // end - строгое сравнение строк на путь к переходу страницы
                             to="/"
                             style={({ isActive }) => ({ color: isActive ? "#9f0013" : "black" })}
                         >
@@ -23,7 +23,6 @@ const AppHeader = () => {
                     /
                     <li>
                         <NavLink
-                            end
                             to="/comics"
                             style={({ isActive }) => ({ color: isActive ? "#9f0013" : "black" })}
                         >

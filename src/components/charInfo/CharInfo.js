@@ -48,7 +48,7 @@ const CharInfo = (props) => {
 };
 
 const View = ({ char }) => {
-    const { name, description, thumbnail, homepage, wiki, comics } = char;
+    const { name, description, thumbnail, homepage, wiki, comiclink, comics } = char;
 
     const comicsList = () => {
         if (comics.length === 0) {
@@ -57,11 +57,7 @@ const View = ({ char }) => {
             let comicsList = comics.map((item, i) => {
                 return (
                     <li className="char__comics-item" key={i}>
-                        <a
-                            href={`${item.resourceURI}?apikey=7bb779595667b5381fd0ca5c8939611b`}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
+                        <a href={comiclink} target="_blank" rel="noreferrer">
                             {item.name}
                         </a>
                     </li>
@@ -94,6 +90,7 @@ const View = ({ char }) => {
                         </a>
                         <a
                             href={wiki}
+                            style={{ display: !wiki ? "none" : "null" }}
                             className="button button__secondary"
                             target="_blank"
                             rel="noreferrer"

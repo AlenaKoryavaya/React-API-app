@@ -5,7 +5,7 @@ const useMarvelService = () => {
 
     const _apiBase = "https://gateway.marvel.com:443/v1/public/";
     const _apiKey = "apikey=7bb779595667b5381fd0ca5c8939611b";
-    const _baseOffset = 200;
+    const _baseOffset = 0;
 
     const getAllCharacters = async (offset = _baseOffset) => {
         const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_apiKey}`);
@@ -17,12 +17,22 @@ const useMarvelService = () => {
         return _transformCharacter(res.data.results[0]);
     };
 
-    const getComics = async (offset = _baseOffset) => {
+    const getAllComics = async (offset = _baseOffset) => {
         const res = await request(`${_apiBase}comics?limit=8&offset=${offset}&${_apiKey}`);
         return res.data.results.map(_transformComics);
     };
 
+    const getComic = async (id) => {
+        const res = await request(`${_apiBase}comics/${id}?${_apiKey}`);
+        return _transformComics(res.data.results[0]);
+    };
+
     const _transformCharacter = (char) => {
+        const checkLinks = (arrLinks, linkName) => {
+            const item = arrLinks.filter((item) => item.type === linkName);
+            return !item[0] ? null : item[0].url;
+        };
+
         return {
             id: char.id,
             name: char.name,
@@ -30,8 +40,9 @@ const useMarvelService = () => {
                 ? `${char.description.slice(0, 210)}...`
                 : "The character description is missing",
             thumbnail: char.thumbnail.path + "." + char.thumbnail.extension,
-            homepage: char.urls[0].url,
-            wiki: char.urls[1].url,
+            homepage: checkLinks(char.urls, "detail"),
+            wiki: checkLinks(char.urls, "wiki"),
+            comiclink: checkLinks(char.urls, "comiclink"),
             comics: char.comics.items,
         };
     };
@@ -40,13 +51,18 @@ const useMarvelService = () => {
         return {
             id: comics.id,
             name: comics.title,
-            price: !comics.prices.price ? "For free" : comics.prices.price,
+            description: !comics.description
+                ? "The character description is missing"
+                : comics.description,
+            pages: comics.pageCount,
+            language: comics.textObjects.language || "en-us",
+            price: !comics.prices.price ? "Not available" : comics.prices.price,
             thumbnail: comics.thumbnail.path + "." + comics.thumbnail.extension,
             url: comics.urls[0].url,
         };
     };
 
-    return { loading, error, clearError, getAllCharacters, getCharacter, getComics };
+    return { loading, error, clearError, getAllCharacters, getCharacter, getAllComics, getComic };
 };
 
 export default useMarvelService;
