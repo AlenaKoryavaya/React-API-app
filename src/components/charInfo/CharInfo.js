@@ -12,7 +12,7 @@ const CharInfo = (props) => {
     const [char, setChar] = useState(null);
 
     // достаем сущности из сервиса
-    const { loading, error, clearError, getCharacter } = useMarvelService();
+    const { loading, error, clearError, getCharacterById } = useMarvelService();
 
     useEffect(() => {
         updateChar();
@@ -29,7 +29,7 @@ const CharInfo = (props) => {
         }
 
         clearError();
-        getCharacter(charId).then(onCharLoaded);
+        getCharacterById(charId).then(onCharLoaded);
     };
 
     const skeleton = char || loading || error ? null : <Skeleton />;
@@ -50,6 +50,7 @@ const CharInfo = (props) => {
 const View = ({ char }) => {
     const { name, description, thumbnail, homepage, wiki, comiclink, comics } = char;
 
+    const checkedDescr = description || "The character description is missing";
     const comicsList = () => {
         if (comics.length === 0) {
             return <li>There are no comics with this character</li>;
@@ -67,16 +68,19 @@ const View = ({ char }) => {
         }
     };
 
-    let imgStyle = { objectFit: "cover" };
+    let style = { objectFit: "cover" };
 
-    if (thumbnail === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg") {
-        imgStyle = { objectFit: "fill" };
+    if (
+        thumbnail === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg" ||
+        thumbnail === "http://i.annihil.us/u/prod/marvel/i/mg/f/60/4c002e0305708.gif"
+    ) {
+        style = { objectFit: "fill" };
     }
 
     return (
         <>
             <div className="char__basics">
-                <img src={thumbnail} alt={name} style={imgStyle} />
+                <img src={thumbnail} alt={name} style={style} />
                 <div>
                     <div className="char__info-name">{name}</div>
                     <div className="char__btns">
@@ -100,7 +104,7 @@ const View = ({ char }) => {
                     </div>
                 </div>
             </div>
-            <div className="char__descr">{description}</div>
+            <div className="char__descr">{checkedDescr}</div>
             <div className="char__comics">Comics:</div>
             <ul className="char__comics-list">{comicsList()}</ul>
         </>

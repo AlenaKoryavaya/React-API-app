@@ -9,7 +9,7 @@ import mjolnir from "../../resources/img/mjolnir.png";
 
 const RandomChar = () => {
     const [char, setChar] = useState({});
-    const { loading, error, clearError, getCharacter } = useMarvelService();
+    const { loading, error, clearError, getCharacterById } = useMarvelService();
 
     useEffect(() => {
         updateChar();
@@ -24,7 +24,7 @@ const RandomChar = () => {
     const updateChar = () => {
         clearError();
         const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-        getCharacter(id).then(onCharLoaded);
+        getCharacterById(id).then(onCharLoaded);
     };
 
     const spinner = loading ? <Spinner /> : null;
@@ -57,6 +57,10 @@ const RandomChar = () => {
 const View = ({ char }) => {
     const { name, description, thumbnail, homepage, wiki } = char;
 
+    const checkedDescr = !description
+        ? "The character description is missing"
+        : `${description.slice(0, 210)}...`;
+
     let style = { objectFit: "cover" };
 
     if (thumbnail === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg") {
@@ -68,7 +72,7 @@ const View = ({ char }) => {
             <img src={thumbnail} alt="Random character" className="randomchar__img" style={style} />
             <div className="randomchar__info">
                 <p className="randomchar__name">{name}</p>
-                <p className="randomchar__descr">{description}</p>
+                <p className="randomchar__descr">{checkedDescr}</p>
                 <div className="randomchar__btns">
                     <a
                         href={homepage}

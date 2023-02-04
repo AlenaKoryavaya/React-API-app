@@ -1,0 +1,26 @@
+.single-char {
+    display: flex;
+    margin-top: 50px;
+    &__figure {
+        margin-right: 50px;
+        img {
+            width: 293px;
+            height: 293px;
+        }
+    }
+    &__info {
+        color: #000000;
+    }
+
+    &__name {
+        font-weight: 700;
+        font-size: 22px;
+        line-height: 26px;
+        margin-bottom: 25px;
+    }
+    &__descr {
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 21px;
+    }
+}
