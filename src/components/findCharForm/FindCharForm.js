@@ -10,7 +10,7 @@ import "./findCharForm.scss";
 
 const FindCharForm = () => {
     const [char, setChar] = useState(null);
-    const { loading, error, getCharacterByName, clearError } = useMarvelService();
+    const { process, setProcess, getCharacterByName, clearError } = useMarvelService();
 
     const onCharLoaded = (char) => {
         setChar(char);
@@ -18,14 +18,17 @@ const FindCharForm = () => {
 
     const updateChar = (name) => {
         clearError();
-        getCharacterByName(name).then(onCharLoaded);
+        getCharacterByName(name)
+            .then(onCharLoaded)
+            .then(() => setProcess("confirmed"));
     };
 
-    const errorMessage = error ? (
-        <div className="char__search-wrapper">
-            <ErrorMessage />
-        </div>
-    ) : null;
+    const errorMessage =
+        process === "error" ? (
+            <div className="char__search-wrapper">
+                <ErrorMessage />
+            </div>
+        ) : null;
 
     const results = !char ? null : char.length > 0 ? (
         <div className="char__search-wrapper">
@@ -33,6 +36,7 @@ const FindCharForm = () => {
             <Link
                 to={`/characters/${char[0].id}`}
                 className="button button__secondary"
+                disabled={process === "loading"}
                 onClick={onCharLoaded}
             >
                 <div className="inner">To page</div>
@@ -63,7 +67,11 @@ const FindCharForm = () => {
                     </label>
                     <div className="char__search-wrapper">
                         <Field id="charName" name="charName" type="text" placeholder="Enter name" />
-                        <button type="submit" className="button button__main" disabled={loading}>
+                        <button
+                            type="submit"
+                            className="button button__main"
+                            disabled={process === "loading"}
+                        >
                             <div className="inner">Find</div>
                         </button>
                     </div>

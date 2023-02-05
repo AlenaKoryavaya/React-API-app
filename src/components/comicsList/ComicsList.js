@@ -7,13 +7,28 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 
 import "./comicsList.scss";
 
+const setContent = (process, Component, newItemsLoading) => {
+    switch (process) {
+        case "waiting":
+            return <Spinner />;
+        case "loading":
+            return newItemsLoading ? <Component /> : <Spinner />;
+        case "confirmed":
+            return <Component />;
+        case "error":
+            return <ErrorMessage />;
+        default:
+            throw new Error("Unexpected process state");
+    }
+};
+
 const ComicsList = (props) => {
     const [comicsList, setComicsList] = useState([]);
     const [newComicsLoading, setNewComicsLoading] = useState(false);
     const [offset, setOffset] = useState(200);
     const [comicsEnded, setComicsEnded] = useState(false);
 
-    const { loading, error, clearError, getAllComics } = useMarvelService();
+    const { loading, error, process, setProcess, clearError, getAllComics } = useMarvelService();
 
     useEffect(() => {
         onReguest(offset, true);
@@ -22,7 +37,9 @@ const ComicsList = (props) => {
     const onReguest = (offset, initial) => {
         clearError();
         initial ? setNewComicsLoading(false) : setNewComicsLoading(true);
-        getAllComics(offset).then(onCharsLoaded);
+        getAllComics(offset)
+            .then(onCharsLoaded)
+            .then(() => setProcess("confirmed"));
     };
 
     const onCharsLoaded = (newCharList) => {
@@ -53,15 +70,9 @@ const ComicsList = (props) => {
         return <ul className="comics__grid">{items}</ul>;
     };
 
-    const items = displayComics(comicsList);
-    const spinner = loading && !newComicsLoading ? <Spinner /> : null;
-    const errorMessage = error ? <ErrorMessage /> : null;
-
     return (
         <div className="comics__list">
-            {items}
-            {spinner}
-            {errorMessage}
+            {setContent(process, () => displayComics(comicsList), newComicsLoading)}
             <button
                 className="button button__main button__long"
                 disabled={newComicsLoading}

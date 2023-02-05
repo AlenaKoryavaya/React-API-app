@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 
 export const useHttp = () => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    // Принцип конечного автомата FSM (Finite-state machine)
+    const [process, setProcess] = useState("waiting");
 
     const request = useCallback(
         // мемоизир ф-ю
@@ -13,7 +13,7 @@ export const useHttp = () => {
             headers = { "Content-type": "application/json" }
         ) => {
             // перед отправкой запроса активируем спинер
-            setLoading(true);
+            setProcess("loading");
             // отправляем fetch на сервер
             try {
                 const res = await fetch(url, { method, body, headers });
@@ -23,13 +23,10 @@ export const useHttp = () => {
                 }
 
                 const data = await res.json();
-                // т.к. ответ положит, убираем спинер
-                setLoading(false);
+                // setProcess("confirmed") - т.к. ф-я async то изменять сост стоит после получения опред данных; ручная установка внутри компонента.
                 return data;
             } catch (e) {
-                // е - приходит автоматич. из браузера
-                setLoading(false);
-                setError(e.message); // метод (message) - содерж инфо об ошибке
+                // е - приходит автоматич. из браузера // метод (message) - содерж инфо об ошибке
                 throw e;
             }
         },
@@ -37,7 +34,9 @@ export const useHttp = () => {
     );
 
     // чтобы перезатереть ошибку (кликом на 'try it')
-    const clearError = useCallback(() => setError(null), []);
+    const clearError = useCallback(() => {
+        setProcess("loading");
+    }, []);
 
-    return { loading, error, request, clearError };
+    return { process, setProcess, request, clearError };
 };

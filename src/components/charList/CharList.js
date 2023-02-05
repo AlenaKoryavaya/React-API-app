@@ -8,6 +8,21 @@ import PropTypes from "prop-types";
 
 import "./charList.scss";
 
+const setContent = (process, Component, newItemsLoading) => {
+    switch (process) {
+        case "waiting":
+            return <Spinner />;
+        case "loading":
+            return newItemsLoading ? <Component /> : <Spinner />;
+        case "confirmed":
+            return <Component />;
+        case "error":
+            return <ErrorMessage />;
+        default:
+            throw new Error("Unexpected process state");
+    }
+};
+
 const CharList = (props) => {
     const [charList, setCharList] = useState([]);
     const [newItemsLoading, setNewItemsLoading] = useState(false);
@@ -15,7 +30,7 @@ const CharList = (props) => {
     const [charEnded, setCharEnded] = useState(false);
     const [selectedChar, setSelectedChar] = useState(null);
 
-    const { loading, error, getAllCharacters } = useMarvelService();
+    const { loading, error, process, setProcess, getAllCharacters } = useMarvelService();
 
     // если init - true -> то это получ первичная загрузка
     useEffect(() => {
@@ -24,7 +39,9 @@ const CharList = (props) => {
 
     const onReguest = (offset, initial) => {
         initial ? setNewItemsLoading(false) : setNewItemsLoading(true);
-        getAllCharacters(offset).then(onCharsLoaded);
+        getAllCharacters(offset)
+            .then(onCharsLoaded)
+            .then(() => setProcess("confirmed"));
     };
 
     const onCharsLoaded = (newCharList) => {
@@ -83,15 +100,9 @@ const CharList = (props) => {
         );
     }
 
-    const items = displayChars(charList);
-    const spinner = loading && !newItemsLoading ? <Spinner /> : null;
-    const errorMessage = error ? <ErrorMessage /> : null;
-
     return (
         <div className="char__list">
-            {items}
-            {spinner}
-            {errorMessage}
+            {setContent(process, () => displayChars(charList), newItemsLoading)}
             <button
                 className="button button__main button__long"
                 disabled={newItemsLoading}
