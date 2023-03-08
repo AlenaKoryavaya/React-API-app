@@ -22,13 +22,13 @@ const setContent = (process, Component, newItemsLoading) => {
     }
 };
 
-const ComicsList = (props) => {
+const ComicsList = () => {
     const [comicsList, setComicsList] = useState([]);
     const [newComicsLoading, setNewComicsLoading] = useState(false);
     const [offset, setOffset] = useState(200);
     const [comicsEnded, setComicsEnded] = useState(false);
 
-    const { loading, error, process, setProcess, clearError, getAllComics } = useMarvelService();
+    const { process, setProcess, clearError, getAllComics } = useMarvelService();
 
     useEffect(() => {
         onReguest(offset, true);

@@ -30,7 +30,7 @@ const CharList = (props) => {
     const [charEnded, setCharEnded] = useState(false);
     const [selectedChar, setSelectedChar] = useState(null);
 
-    const { loading, error, process, setProcess, getAllCharacters } = useMarvelService();
+    const { process, setProcess, getAllCharacters } = useMarvelService();
 
     // если init - true -> то это получ первичная загрузка
     useEffect(() => {
